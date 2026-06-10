@@ -36,6 +36,11 @@ from .solver_circle import (
     linear_circular_ot,
 )
 
+from .solver_tree import (
+    topological_sort,
+    tree_wasserstein,
+)
+
 __all__ = [
     "emd",
     "emd2",
@@ -60,4 +65,6 @@ __all__ = [
     "free_support_barycenter_generic_costs",
     "NorthWestMMGluing",
     "ot_barycenter_energy",
+    "topological_sort",
+    "tree_wasserstein",
 ]
