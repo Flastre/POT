@@ -11,14 +11,15 @@ Solver for the tree wasserstein distance problem
 
 def topological_sort(tree):
     r"""
-    Computes a topological sort of the given tree
-    The tree is an array : tree[i] is the direct ancestor of node i, and tree[root] = root
+    Computes a topological order of the given tree
 
-    Je ne vérifie pas que l'arbre est du bon format
-    Pas de backend ici ?
+    Parameters
+    -----------
+    tree: array_like, shape(n, ...)
+        ancestor of each node in the tree (ancestor of root is root)
     """
 
-    n = len(tree)
+    n = tree.shape[0]
 
     in_degree = np.zeros(n)
 
@@ -53,9 +54,9 @@ def tree_wasserstein(tree, length, u_weights, v_weights, topo_order=None):
 
     Parameters
     ----------
-    tree : array_like, shape(n)
+    tree : array_like, shape(n, ...)
         ancestor of each node in the tree (ancestor of root is root)
-    length : array_like, shape(n)
+    length : array_like, shape(n, ...)
         length of the arc above each node (length of root is 0)
     u_weights : array_like, shape(n, ...)
         weights of the first empirical distributions
@@ -70,10 +71,10 @@ def tree_wasserstein(tree, length, u_weights, v_weights, topo_order=None):
         The tree wasserstein distance
     """
 
-    n = len(tree)
+    n = tree.shape[0]
 
     assert (
-        n == len(length) == u_weights.shape[0] == v_weights.shape[0]
+        n == length.shape[0] == u_weights.shape[0] == v_weights.shape[0]
     ), "dimension error in the input"
 
     if topo_order is None:
