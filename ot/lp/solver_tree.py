@@ -3,7 +3,7 @@ import numpy as np
 from collections import deque
 
 """
-Solver for the tree wasserstein distance problem
+Solver for the tree wasserstein distance
 """
 
 # Author : Ali Boudjema
@@ -15,13 +15,13 @@ def topological_sort(tree):
 
     Parameters
     -----------
-    tree: array_like, shape(n, ...)
+    tree: array_like, shape(n)
         ancestor of each node in the tree (ancestor of root is root)
     """
 
     n = tree.shape[0]
 
-    in_degree = np.zeros(n)
+    in_degree = np.zeros(n, dtype=int)
 
     for cur_node in range(n):
         if cur_node != tree[cur_node]:
@@ -39,11 +39,13 @@ def topological_sort(tree):
         cur_node = queue.popleft()
         topo_order.append(cur_node)
 
-        if cur_node != tree[cur_node]:
-            in_degree[tree[cur_node]] -= 1
+        ancestor = tree[cur_node]
 
-            if in_degree[tree[cur_node]] == 0:
-                queue.append(tree[cur_node])
+        if cur_node != ancestor:
+            in_degree[ancestor] -= 1
+
+            if in_degree[ancestor] == 0:
+                queue.append(ancestor)
 
     return np.array(topo_order)
 
@@ -54,20 +56,20 @@ def tree_wasserstein(tree, length, u_weights, v_weights, topo_order=None):
 
     Parameters
     ----------
-    tree : array_like, shape(n, ...)
+    tree : array_like, shape(n)
         ancestor of each node in the tree (ancestor of root is root)
-    length : array_like, shape(n, ...)
+    length : array_like, shape(n)
         length of the arc above each node (length of root is 0)
-    u_weights : array_like, shape(n, ...)
+    u_weights : array_like, shape(n)
         weights of the first empirical distributions
-    v_weights : array_like, shape(n, ...)
+    v_weights : array_like, shape(n)
         weights of the second empirical distributions
     topo_order : array_like, shape(n)
         topological order of the tree, optional
 
     Returns
     -------
-    cost : float/array_like, shape(...)
+    cost : float
         The tree wasserstein distance
     """
 
@@ -94,11 +96,9 @@ def tree_wasserstein(tree, length, u_weights, v_weights, topo_order=None):
             u_cumweights[cur_node] - v_cumweights[cur_node]
         )
 
-        u_cumweights[tree[cur_node]] = (
-            u_cumweights[cur_node] + u_cumweights[tree[cur_node]]
-        )
-        v_cumweights[tree[cur_node]] = (
-            v_cumweights[cur_node] + v_cumweights[tree[cur_node]]
-        )
+        ancestor = tree[cur_node]
+
+        u_cumweights[ancestor] = u_cumweights[cur_node] + u_cumweights[ancestor]
+        v_cumweights[ancestor] = v_cumweights[cur_node] + v_cumweights[ancestor]
 
     return cost
