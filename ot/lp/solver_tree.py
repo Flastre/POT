@@ -78,6 +78,11 @@ def tree_wasserstein(
         The tree wasserstein distance
     plans : coo_matrix, optional
         If return_plans is True, returns a coo_matrix containing the plan
+
+    Reference
+    ---------
+    The proof of this algorithm uses the formula (3) in the article
+    Tree-Sliced Variants of Wasserstein Distances
     """
 
     n = tree.shape[0]

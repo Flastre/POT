@@ -41,6 +41,10 @@ from .solver_tree import (
     tree_wasserstein,
 )
 
+from .tree_barycenter import (
+    tree_barycenter,
+)
+
 __all__ = [
     "emd",
     "emd2",
@@ -67,4 +71,5 @@ __all__ = [
     "ot_barycenter_energy",
     "topological_sort",
     "tree_wasserstein",
+    "tree_barycenter",
 ]
