@@ -1,4 +1,50 @@
 from ..backend import get_backend
+import numpy as np
+from collections import deque
+
+# Author : Ali Boudjema
+
+
+# A retirer
+def topological_sort(tree):
+    r"""
+    Computes a topological order of the given tree
+
+    Parameters
+    -----------
+    tree: array_like, shape(n)
+        ancestor of each node in the tree (ancestor of root is root)
+    """
+
+    n = tree.shape[0]
+
+    in_degree = np.zeros(n, dtype=int)
+
+    for cur_node in range(n):
+        if cur_node != tree[cur_node]:
+            in_degree[tree[cur_node]] += 1
+
+    queue = deque()
+
+    for cur_node in range(n):
+        if in_degree[cur_node] == 0:
+            queue.append(cur_node)
+
+    topo_order = []
+
+    while queue:
+        cur_node = queue.popleft()
+        topo_order.append(cur_node)
+
+        ancestor = tree[cur_node]
+
+        if cur_node != ancestor:
+            in_degree[ancestor] -= 1
+
+            if in_degree[ancestor] == 0:
+                queue.append(ancestor)
+
+    return np.array(topo_order)
 
 
 def wgm(values, weights):
@@ -6,14 +52,14 @@ def wgm(values, weights):
 
     nx = get_backend(values, weights)
 
-    sorted_indices = nx.argsort(values)
+    sorted_indices = np.argsort(values, kind="stable")
 
     values_sorted = values[sorted_indices]
     weights_sorted = weights[sorted_indices]
 
     cum_weights = nx.cumsum(weights_sorted)
 
-    id = nx.searchsorted(cum_weights, 0.5)
+    id = nx.searchsorted(cum_weights, 0.5 - 1e9)
 
     return values_sorted[id]
 
@@ -39,7 +85,7 @@ def get_measure(z, tree, length):
     return measure
 
 
-def tree_barycenter(tree, length, measure, weights):
+def tree_barycenter(tree, length, measure, weights, topo_order=None):
     r"""
     Computes the tree wasserstein barycenter for a given tree between multiplie empirical distributions
 
@@ -74,14 +120,17 @@ def tree_barycenter(tree, length, measure, weights):
 
     z_measure = nx.zeros((n_measure, n_node))
 
-    for cur_node in range(n_node):
+    if topo_order is None:
+        topo_order = topological_sort(tree)
+
+    for cur_node in topo_order:
         p = tree[cur_node]
 
         for id_mes in range(n_measure):
             z_measure[id_mes][cur_node] += measure[id_mes][cur_node]
 
             if cur_node != p:
-                z_measure[id_mes][p] += measure[id_mes][cur_node]
+                z_measure[id_mes][p] += z_measure[id_mes][cur_node]
 
     z = nx.zeros(n_node)
 
