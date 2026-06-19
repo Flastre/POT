@@ -1,50 +1,8 @@
 from ..backend import get_backend
 import numpy as np
-from collections import deque
+from .solver_tree import topological_sort
 
 # Author : Ali Boudjema
-
-
-# A retirer
-def topological_sort(tree):
-    r"""
-    Computes a topological order of the given tree
-
-    Parameters
-    -----------
-    tree: array_like, shape(n)
-        ancestor of each node in the tree (ancestor of root is root)
-    """
-
-    n = tree.shape[0]
-
-    in_degree = np.zeros(n, dtype=int)
-
-    for cur_node in range(n):
-        if cur_node != tree[cur_node]:
-            in_degree[tree[cur_node]] += 1
-
-    queue = deque()
-
-    for cur_node in range(n):
-        if in_degree[cur_node] == 0:
-            queue.append(cur_node)
-
-    topo_order = []
-
-    while queue:
-        cur_node = queue.popleft()
-        topo_order.append(cur_node)
-
-        ancestor = tree[cur_node]
-
-        if cur_node != ancestor:
-            in_degree[ancestor] -= 1
-
-            if in_degree[ancestor] == 0:
-                queue.append(ancestor)
-
-    return np.array(topo_order)
 
 
 def wgm(values, weights):
