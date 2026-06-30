@@ -43,6 +43,7 @@ from .solver_tree import (
 
 from .tree_barycenter import (
     tree_barycenter,
+    fixed_support_tree_barycenter,
 )
 
 __all__ = [
@@ -72,4 +73,5 @@ __all__ = [
     "topological_sort",
     "tree_wasserstein",
     "tree_barycenter",
+    "fixed_support_tree_barycenter",
 ]
