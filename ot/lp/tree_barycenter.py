@@ -2,6 +2,7 @@ from ..backend import get_backend
 import numpy as np
 from .solver_tree import topological_sort
 from ..utils import proj_simplex
+from ..utils import list_to_array
 
 # Author : Ali Boudjema
 
@@ -127,8 +128,21 @@ def get_B_matrix(tree, length, nb_leafs):
     return B
 
 
+def get_gradient(cur_B, B_mes_sorted, B, nb_mes, nb_nodes):
+    idx = np.zeros(nb_nodes, dtype=int)
+
+    for node in range(nb_nodes):
+        idx[node] = np.searchsorted(B_mes_sorted[:, node], cur_B[node]) + 1
+
+    z = -nb_mes + 2 * idx - 2
+
+    g = B.T.dot(z) / nb_mes
+
+    return g
+
+
 def fixed_support_tree_barycenter(tree, length, measures, nb_itr=100, step=0.1):
-    nx = get_backend(length)
+    nx = get_backend(length, measures)
     nb_leafs = measures.shape[1]
 
     B = get_B_matrix(tree, length, nb_leafs)
@@ -138,28 +152,96 @@ def fixed_support_tree_barycenter(tree, length, measures, nb_itr=100, step=0.1):
 
     cur_mes = nx.ones(nb_leafs) / nb_leafs
 
-    B_mes = [B.dot(measures[i]) for i in range(nb_mes)]
+    B_mes = list_to_array([B.dot(measures[i]) for i in range(nb_mes)])
 
-    B_mes = np.asarray(B_mes)
+    sigma = nx.argsort(B_mes, axis=0)
 
-    sigma = np.argsort(B_mes, axis=0)
-
-    B_mes_sorted = np.take_along_axis(B_mes, sigma, axis=0)
+    B_mes_sorted = nx.take_along_axis(B_mes, sigma, axis=0)
 
     for itr in range(nb_itr):
         cur_B = B.dot(cur_mes)
 
-        idx = np.zeros(nb_nodes, dtype=int)
-
-        for node in range(nb_nodes):
-            idx[node] = np.searchsorted(B_mes_sorted[:, node], cur_B[node]) + 1
-
-        z = -nb_mes + 2 * idx - 2
-
-        g = B.T.dot(z) / nb_mes
+        g = get_gradient(cur_B, B_mes_sorted, B, nb_mes, nb_nodes)
 
         cur_mes -= step * g
 
         cur_mes = proj_simplex(cur_mes)
+
+    return cur_mes
+
+
+def pre_process_trees(tree_list, length_list, measures):
+    nx = get_backend(length_list, measures)
+
+    nb_leafs = measures.shape[2]
+
+    prepared_trees = []
+
+    for tree, length, mes in zip(tree_list, length_list, measures):
+        B = get_B_matrix(tree, length, nb_leafs)
+        nb_mes = mes.shape[0]
+
+        B_mes = list_to_array([B.dot(mes[i]) for i in range(nb_mes)])
+
+        B_mes_sorted = nx.sort(B_mes, axis=0)
+
+        prepared_trees.append(
+            {
+                "B": B,
+                "B_mes_sorted": B_mes_sorted,
+                "nb_nodes": tree.shape[0],
+                "nb_mes": nb_mes,
+            }
+        )
+
+    return prepared_trees
+
+
+def sliced_fixed_support_tree_barycenter(
+    tree_list, length_list, measures, nb_itr=100, step=0.01, tol=1e-5
+):
+    """
+    Parameters
+    -----------
+    tree_list : array_like, shape (t, n)
+    length_list : array_like, shape (t, n)
+    measures : array_like, shape (t, m, k)
+    """
+
+    nx = get_backend(length_list, measures)
+
+    nb_leafs = measures.shape[2]
+
+    cur_mes = nx.ones(nb_leafs) / nb_leafs
+
+    prepared_trees = pre_process_trees(tree_list, length_list, measures)
+
+    nb_tree = len(prepared_trees)
+
+    for itr in range(nb_itr):
+        old_mes = cur_mes.copy()
+        g_total = nx.zeros(nb_leafs)
+
+        for tree_data in prepared_trees:
+            B = tree_data["B"]
+            B_mes_sorted = tree_data["B_mes_sorted"]
+            nb_nodes = tree_data["nb_nodes"]
+            nb_mes = tree_data["nb_mes"]
+
+            cur_B = B.dot(cur_mes)
+
+            g_tree = get_gradient(cur_B, B_mes_sorted, B, nb_mes, nb_nodes)
+            g_total += g_tree
+
+        g_mean = g_total / nb_tree
+
+        g_mean /= np.linalg.norm(g_mean, ord=2)
+
+        cur_mes -= step * g_mean
+
+        cur_mes = proj_simplex(cur_mes)
+
+        if np.linalg.norm(cur_mes - old_mes) < tol:
+            break
 
     return cur_mes

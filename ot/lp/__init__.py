@@ -44,6 +44,7 @@ from .solver_tree import (
 from .tree_barycenter import (
     tree_barycenter,
     fixed_support_tree_barycenter,
+    sliced_fixed_support_tree_barycenter,
 )
 
 __all__ = [
@@ -74,4 +75,5 @@ __all__ = [
     "tree_wasserstein",
     "tree_barycenter",
     "fixed_support_tree_barycenter",
+    "sliced_fixed_support_tree_barycenter",
 ]
