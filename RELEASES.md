@@ -38,6 +38,7 @@ This new release adds support for sparse cost matrices and a new lazy exact OT s
 - Update the geomloss wrapper to the new version and API (PR #826)
 - Fix docstrings for `lowrank_gromov_wasserstein_samples` and `lowrank_sinkhorn` (PR #823)
 - Reorganize all tests per backend (PR #828)
+- Implement debiased OT solvers in `ot.solve_sample`.
 
 
 #### Closed issues
@@ -60,7 +61,7 @@ This new release adds support for sparse cost matrices and a new lazy exact OT s
 - Fix documentation build on master with submodules (PR #818)
 - Fix failing test for unbalanced solver with generic regularization (PR #824)
 - Fix docstrings for `lowrank_gromov_wasserstein_samples` and `lowrank_sinkhorn` (PR #823)   
-
+- Update sgot cost function and example (PR #830)
 
 ## 0.9.6.post1
 

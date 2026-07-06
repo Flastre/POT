@@ -81,10 +81,17 @@ authors:
   - given-names: David
     family-names: Coeurjolly
     affiliation: CNRS, LIRIS
+  - given-names: Thibaut
+    family-names: Germain
+    affiliation: Ecole Polytechnique
+  - given-names: Sienna
+    family-names: O'Shea
+    affiliation: Ecole Polytechnique
   - given-names: Marco
     family-names: Corneli
     affiliation: Université Côte d'Azur
-  - given-names: Ferdinand Genans
+  - given-names: Ferdinand
+    family-names: Genans
     affiliation: Sorbonne Université, LPSM, CNRS
 identifiers:
   - type: url
