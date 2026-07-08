@@ -50,7 +50,7 @@ def topological_sort(tree):
     return np.array(topo_order)
 
 
-def tree_wasserstein(
+def tree_wasserstein_distance(
     tree, length, u_weights, v_weights, topo_order=None, return_plans=False
 ):
     r"""
@@ -59,9 +59,9 @@ def tree_wasserstein(
     Parameters
     ----------
     tree : array_like, shape(n)
-        ancestor of each node in the tree (ancestor of root is root)
+        parent of each node in the tree (parent of root is root)
     length : array_like, shape(n)
-        length of the arc above each node (length of root is 0)
+        length of the edge above each node (length of root is 0)
     u_weights : array_like, shape(n)
         weights of the first empirical distributions
     v_weights : array_like, shape(n)

@@ -38,13 +38,11 @@ from .solver_circle import (
 
 from .solver_tree import (
     topological_sort,
-    tree_wasserstein,
+    tree_wasserstein_distance,
 )
 
 from .tree_barycenter import (
-    tree_barycenter,
     fixed_support_tree_barycenter,
-    sliced_fixed_support_tree_barycenter,
 )
 
 __all__ = [
@@ -72,8 +70,6 @@ __all__ = [
     "NorthWestMMGluing",
     "ot_barycenter_energy",
     "topological_sort",
-    "tree_wasserstein",
-    "tree_barycenter",
+    "tree_wasserstein_distance",
     "fixed_support_tree_barycenter",
-    "sliced_fixed_support_tree_barycenter",
 ]
