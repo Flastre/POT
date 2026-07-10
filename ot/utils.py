@@ -2148,3 +2148,46 @@ def split_sample_ratio(
         a2 = a02
 
     return X_a1, X_a2, a1, a2, sel_a1, sel_a2
+
+
+def random_tree(points, seed=None):
+    """Generate a random tree structured from a set of geometric points.
+
+    The tree is constructed by iteratively connecting each new node to a
+    randomly chosen existing node among the previous ones.
+    Edge lengths represent the Euclidean distance between connected points.
+
+    Parameters
+    ----------
+    points : array_like, shape (n, d)
+        Coordinates of the nodes in a d-dimensional space. The backend type
+        of this array (NumPy, PyTorch, etc.) determines the backend of the
+        output lengths.
+    seed : int, optional
+        Seed for the random number generator to ensure reproducibility.
+        Default is None.
+
+    Returns
+    -------
+    tree : ndarray, shape (n,)
+        An integer array where each element represents the parent of that node.
+        By construction, tree[0] = 0 (the root is its own parent).
+    length : array_like, shape (n,)
+        Length of the edge above each node (distance to its parent).
+        The root has a length of 0. Match the backend type of `points`.
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    nx = get_backend(points)
+
+    nb_points = points.shape[0]
+
+    tree = np.zeros(nb_points, dtype=int)
+    length = nx.full(nb_points, 0, type_as=points)
+
+    for i in range(1, nb_points):
+        tree[i] = np.random.randint(0, i)
+        length[i] = nx.norm(points[i] - points[tree[i]])
+
+    return tree, length

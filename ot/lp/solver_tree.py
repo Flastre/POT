@@ -1,6 +1,7 @@
 from ..backend import get_backend
 import numpy as np
 from collections import deque
+from ..utils import list_to_array
 
 """
 Solver for the tree wasserstein distance
@@ -172,6 +173,10 @@ def tree_wasserstein_distance(
                 dict_cur, dict_p = dict_p, dict_cur
 
             virt_size[p] += virt_size[cur]
+
+    mass_plan = list_to_array(mass_plan, nx=nx)
+    source_plan = list_to_array(source_plan, nx=nx)
+    sink_plan = list_to_array(sink_plan, nx=nx)
 
     plans = nx.coo_matrix(
         mass_plan, source_plan, sink_plan, shape=(n, n), type_as=length

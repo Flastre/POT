@@ -48,11 +48,6 @@ def get_gradient(cur_B, B_mes_sorted, B, nb_mes, nb_nodes):
 def pre_process_trees(tree_list, length_list, measures):
     nx = get_backend(length_list, measures)
 
-    if tree_list.ndim == 1:
-        tree_list = nx.reshape(tree_list, (1, *tree_list.shape))
-        length_list = nx.reshape(length_list, (1, *length_list.shape))
-        measures = nx.reshape(measures, (1, *measures.shape))
-
     nb_leafs = measures.shape[2]
 
     prepared_trees = []
@@ -127,12 +122,22 @@ def fixed_support_tree_barycenter(
     "Fixed Support Tree-Sliced Wasserstein Barycenter"
     """
 
-    nx = get_backend(length_list, measures)
+    nx = get_backend(measures)
+
+    if tree_list.ndim == 1:
+        tree_list = nx.reshape(tree_list, (1, *tree_list.shape))
+        length_list = nx.reshape(length_list, (1, *length_list.shape))
+
+    if measures.ndim == 2:
+        measures = nx.reshape(measures, (1, *measures.shape))
+        measures = nx.tile(measures, (tree_list.shape[0], 1, 1))
 
     assert (
         tree_list.shape[0] == length_list.shape[0] == measures.shape[0]
         and tree_list.shape[1] == length_list.shape[1]
     ), "dimension error in the input"
+
+    prepared_trees = pre_process_trees(tree_list, length_list, measures)
 
     nb_leafs = measures.shape[2]
 
@@ -140,8 +145,6 @@ def fixed_support_tree_barycenter(
         cur_mes = nx.ones(nb_leafs) / nb_leafs
     else:
         cur_mes = init_measure
-
-    prepared_trees = pre_process_trees(tree_list, length_list, measures)
 
     nb_tree = len(prepared_trees)
 
