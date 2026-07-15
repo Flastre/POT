@@ -22,19 +22,21 @@ def test_symetry_reflexivity(nx):
 
     length = nx.from_numpy(length)
 
-    """np.testing.assert_allclose(
+    np.testing.assert_allclose(
         fixed_support_tree_barycenter(tree, length, nx.stack([u, v])),
         fixed_support_tree_barycenter(tree, length, nx.stack([v, u])),
-        rtol = 1e-2,
-        atol = 1e-3
-    )"""
+        rtol=1e-2,
+        atol=1e-3,
+    )
 
-    """np.testing.assert_allclose(
-        fixed_support_tree_barycenter(tree, length, nx.stack([u, u]), nb_itr = 10000, step = 0.001),
+    np.testing.assert_allclose(
+        fixed_support_tree_barycenter(
+            tree, length, nx.stack([u, u]), nb_itr=10000, step=0.001
+        ),
         u,
-        rtol = 5e-4,
-        atol = 1e-3
-    )"""
+        rtol=5e-4,
+        atol=1e-3,
+    )
 
 
 def test_multiple_trees(nx):
