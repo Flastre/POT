@@ -2163,6 +2163,7 @@ def random_tree(points, seed=None):
         Coordinates of the nodes in a d-dimensional space. The backend type
         of this array (NumPy, PyTorch, etc.) determines the backend of the
         output lengths.
+
     seed : int, optional
         Seed for the random number generator to ensure reproducibility.
         Default is None.
@@ -2189,5 +2190,25 @@ def random_tree(points, seed=None):
     for i in range(1, nb_points):
         tree[i] = np.random.randint(0, i)
         length[i] = nx.norm(points[i] - points[tree[i]])
+
+    return tree, length
+
+
+def random_tree_fixed_leaves(n, k, seed=None):
+    """Generates a random tree with n nodes and k leaves, the leaves being the first nodes
+    in the tree
+    """
+
+    if seed is not None:
+        np.random.seed(seed)
+
+    tree = np.zeros(n, dtype=int)
+    length = np.random.rand(n).astype(np.float32)
+
+    length[n - 1] = 0
+
+    for i in range(n - 1):
+        tree[i] = np.random.randint(max(i + 1, n - k + 1), n)
+    tree[n - 1] = n - 1
 
     return tree, length
