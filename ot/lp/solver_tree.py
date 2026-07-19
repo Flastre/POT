@@ -1,7 +1,6 @@
 from ..backend import get_backend
 import numpy as np
 from collections import deque
-from ..utils import list_to_array
 
 """
 Solver for the tree wasserstein distance
@@ -149,14 +148,14 @@ def tree_wasserstein_distance(
                     mass_plan.append(match_amount)
 
                     length_path = depth[source] + depth[sink] - 2 * depth[p]
-                    cost += match_amount * length_path
+                    cost = cost + match_amount * length_path
 
                     if amount_scur > 0:
-                        dict_cur[node_scur] -= match_amount
-                        dict_p[node_sp] += match_amount
+                        dict_cur[node_scur] = dict_cur[node_scur] - match_amount
+                        dict_p[node_sp] = dict_p[node_sp] + match_amount
                     else:
-                        dict_cur[node_scur] += match_amount
-                        dict_p[node_sp] -= match_amount
+                        dict_cur[node_scur] = dict_cur[node_scur] + match_amount
+                        dict_p[node_sp] = dict_p[node_sp] - match_amount
 
                     if dict_cur[node_scur] == 0:
                         del dict_cur[node_scur]
@@ -174,9 +173,9 @@ def tree_wasserstein_distance(
 
             virt_size[p] += virt_size[cur]
 
-    mass_plan = list_to_array(mass_plan, nx=nx)
-    source_plan = list_to_array(source_plan, nx=nx)
-    sink_plan = list_to_array(sink_plan, nx=nx)
+    mass_plan = nx.stack(mass_plan, axis=0)
+    source_plan = nx.from_numpy(np.asarray(source_plan), type_as=length)
+    sink_plan = nx.from_numpy(np.asarray(sink_plan), type_as=length)
 
     plans = nx.coo_matrix(
         mass_plan, source_plan, sink_plan, shape=(n, n), type_as=length

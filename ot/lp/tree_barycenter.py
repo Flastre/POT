@@ -2,10 +2,12 @@ from ..backend import get_backend
 import numpy as np
 from ..utils import proj_simplex
 from ..utils import list_to_array
+import torch
+
+from .solver_tree import topological_sort
+from .solver_tree import tree_wasserstein_distance
 
 # Author : Ali Boudjema
-
-# IMPORTANT : ON PREND COMME CONVENTION QUE LES FEUILLES SONT LES PREMIERS SOMMETS DE L'ARBRE
 
 
 def get_B_matrix(tree, length, nb_leafs):
@@ -120,7 +122,7 @@ def fixed_support_tree_barycenter(
         k is the fixed number of leaves shared by all trees, and m is the number
         of measures. Accepts a 2D array of shape (m, k) for a single tree, or a 3D array
         of shape (t, m, k) in a multi-tree setting.
-    nb_tr : int, optional
+    nb_itr : int, optional
         the maximal number of iterations for the subgradient descent
     step : float, optional
         the step size of the descent
@@ -183,7 +185,7 @@ def fixed_support_tree_barycenter(
 
         g_mean = g_total / nb_tree
 
-        g_mean /= np.linalg.norm(g_mean, ord=2)
+        g_mean /= nx.norm(g_mean) + 1e-12
 
         cur_mes -= step * g_mean
 
@@ -193,3 +195,57 @@ def fixed_support_tree_barycenter(
             break
 
     return cur_mes
+
+
+def free_support_tree_barycenter(tree, length, measures, nb_itr=100, step=0.01):
+    """Computes the tree wasserstein barycenter for a tree with no constraints on the
+    support of the measures
+
+    Parameters
+    ----------
+    tree : array_like
+        A tree of shape (n), the number of nodes. tree[i] contains the index
+        of the parent of node i (with tree[root] == root).
+    length : array_like
+        The edge weights corresponding to tree. A single array of shape (n_t) containing
+        the length of the edge connecting node i to its parent.
+    measures : array_like, shape (m,n)
+        The input probability distributions mapped to the nodes.
+    nb_itr : int, optional
+        the maximal number of iterations for the subgradient descent
+    step : float, optional
+        the step size of the descent
+    """
+
+    nb_nodes = tree.shape[0]
+
+    barycenter = torch.ones(nb_nodes) / nb_nodes
+    topo_order = topological_sort(tree)
+
+    for itr in range(nb_itr):
+        barycenter.requires_grad_(True)
+
+        loss = sum(
+            tree_wasserstein_distance(tree, length, cur_mes, barycenter, topo_order)
+            for cur_mes in measures
+        )
+
+        loss.backward()
+
+        grad = barycenter.grad
+
+        if grad is None or torch.norm(grad) < 1e-12:
+            barycenter = barycenter.detach()
+            break
+
+        with torch.no_grad():
+            scaled_grad = step * grad
+            scaled_grad = scaled_grad - torch.max(scaled_grad)
+
+            barycenter_next = barycenter * torch.exp(-scaled_grad)
+
+            barycenter = barycenter_next / (torch.sum(barycenter_next) + 1e-15)
+
+        barycenter = barycenter.detach()
+
+    return barycenter
