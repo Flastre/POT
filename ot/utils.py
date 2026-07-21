@@ -2177,10 +2177,11 @@ def random_tree(points, seed=None):
         Length of the edge above each node (distance to its parent).
         The root has a length of 0. Match the backend type of `points`.
     """
-    if seed is not None:
-        np.random.seed(seed)
-
     nx = get_backend(points)
+
+    if seed is not None:
+        nx.seed(seed)
+        np.random.seed(seed)
 
     nb_points = points.shape[0]
 
@@ -2191,24 +2192,33 @@ def random_tree(points, seed=None):
         tree[i] = np.random.randint(0, i)
         length[i] = nx.norm(points[i] - points[tree[i]])
 
+    tree = nx.from_numpy(tree)
+
     return tree, length
 
 
-def random_tree_fixed_leaves(n, k, seed=None):
+def random_tree_fixed_leaves(n, k, nx, seed=None):
     """Generates a random tree with n nodes and k leaves, the leaves being the first nodes
-    in the tree
+    in the tree, and nx is the specified backend
     """
+
+    trash = nx.zeros(1)
+
+    nx = get_backend(trash)
 
     if seed is not None:
         np.random.seed(seed)
+        nx.seed(seed)
 
     tree = np.zeros(n, dtype=int)
-    length = np.random.rand(n).astype(np.float32)
+    length = nx.rand(n)
 
     length[n - 1] = 0
 
     for i in range(n - 1):
         tree[i] = np.random.randint(max(i + 1, n - k + 1), n)
     tree[n - 1] = n - 1
+
+    tree = nx.from_numpy(tree)
 
     return tree, length

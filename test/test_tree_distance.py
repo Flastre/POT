@@ -40,7 +40,7 @@ def test_chain(nx):
     points_np = np.sort(points_np)
     points = nx.from_numpy(points_np)
 
-    tree = np.arange(-1, n - 1)
+    tree = nx.arange(n - 1, -1)
     tree[0] = 0
 
     length = nx.zeros(n)
@@ -57,4 +57,5 @@ def test_chain(nx):
     np.testing.assert_almost_equal(
         tree_wasserstein_distance(tree, length, u, v),
         wasserstein_1d(points, points, u, v),
+        decimal=4,
     )

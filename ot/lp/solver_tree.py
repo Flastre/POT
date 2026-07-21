@@ -94,7 +94,7 @@ def tree_wasserstein_distance(
     if topo_order is None:
         topo_order = topological_sort(tree)
 
-    nx = get_backend(length, u_weights, v_weights)
+    nx = get_backend(tree, length, u_weights, v_weights)
 
     mass_dict = {}
 
@@ -120,7 +120,7 @@ def tree_wasserstein_distance(
 
     for cur in topo_order:
         dict_cur = mass_dict[cur]
-        p = tree[cur]
+        p = int(tree[cur])
 
         if cur != p:
             dict_p = mass_dict[p]
@@ -173,7 +173,8 @@ def tree_wasserstein_distance(
 
             virt_size[p] += virt_size[cur]
 
-    mass_plan = nx.stack(mass_plan, axis=0)
+    if mass_plan:
+        mass_plan = nx.stack(mass_plan, axis=0)
     source_plan = nx.from_numpy(np.asarray(source_plan), type_as=length)
     sink_plan = nx.from_numpy(np.asarray(sink_plan), type_as=length)
 

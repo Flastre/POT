@@ -141,8 +141,7 @@ def fixed_support_tree_barycenter(
     ----------
     "Fixed Support Tree-Sliced Wasserstein Barycenter"
     """
-
-    nx = get_backend(measures)
+    nx = get_backend(tree_list, length_list, measures)
 
     if tree_list.ndim == 1:
         tree_list = np.reshape(tree_list, (1, *tree_list.shape))
@@ -197,7 +196,9 @@ def fixed_support_tree_barycenter(
     return cur_mes
 
 
-def free_support_tree_barycenter(tree, length, measures, nb_itr=100, step=0.01):
+def free_support_tree_barycenter(
+    tree, length, measures, nb_itr=100, step=0.01, weights=None
+):
     """Computes the tree wasserstein barycenter for a tree with no constraints on the
     support of the measures
 
@@ -215,19 +216,37 @@ def free_support_tree_barycenter(tree, length, measures, nb_itr=100, step=0.01):
         the maximal number of iterations for the subgradient descent
     step : float, optional
         the step size of the descent
+    weights : array_like, shape(m), optional
+        The weight of each measure, set to uniform if none
     """
-
     nb_nodes = tree.shape[0]
 
     barycenter = torch.ones(nb_nodes) / nb_nodes
     topo_order = topological_sort(tree)
 
+    tree = np.asarray(tree)
+    tree = torch.from_numpy(tree)
+
+    length = np.asarray(length)
+    length = torch.from_numpy(length)
+
+    measures = np.asarray(measures)
+    measures = torch.from_numpy(measures)
+
+    nb_mes = measures.shape[0]
+
+    if weights is None:
+        w = torch.ones(nb_mes) / nb_mes
+    else:
+        w = weights
+
     for itr in range(nb_itr):
         barycenter.requires_grad_(True)
 
         loss = sum(
-            tree_wasserstein_distance(tree, length, cur_mes, barycenter, topo_order)
-            for cur_mes in measures
+            cur_w
+            * tree_wasserstein_distance(tree, length, cur_mes, barycenter, topo_order)
+            for cur_w, cur_mes in zip(w, measures)
         )
 
         loss.backward()
