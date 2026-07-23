@@ -176,7 +176,7 @@ source_mes = source_mes.detach().requires_grad_(True)
 
 step = 0.001
 
-for i in range(300):
+for i in range(1000):
     loss = ot.lp.tree_wasserstein_distance(tree, length, source_mes, target_mes)
 
     loss.backward()
@@ -302,7 +302,7 @@ source_mes[12] = 1.0
 target_mes[11] = 1.0
 
 barycenter = ot.lp.free_support_tree_barycenter(
-    tree, length, torch.stack([source_mes, target_mes]), 1000, 1e-1
+    tree, length, torch.stack([source_mes, target_mes]), 1000, 5e-1
 )
 
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 7))

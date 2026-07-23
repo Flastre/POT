@@ -2,7 +2,6 @@ from ..backend import get_backend
 import numpy as np
 from ..utils import proj_simplex
 from ..utils import list_to_array
-import torch
 
 from .solver_tree import topological_sort
 from .solver_tree import tree_wasserstein_distance
@@ -219,6 +218,9 @@ def free_support_tree_barycenter(
     weights : array_like, shape(m), optional
         The weight of each measure, set to uniform if none
     """
+
+    import torch
+
     nb_nodes = tree.shape[0]
 
     barycenter = torch.ones(nb_nodes) / nb_nodes
